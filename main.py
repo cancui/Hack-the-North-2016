@@ -30,15 +30,11 @@ def speech2text(file_name):
 	return transcript_text
 
 def text2speech(text_to_say):
-	#Text to speech. Repeat what we said, three times
+	#length_of_text = len(text_to_say.split())
+	#print length_of_text
+
 	username = os.environ.get("BLUEMIX_USERNAME_T2S")
 	password = os.environ.get("BLUEMIX_PASSWORD_T2S")
-
-	#bash_command3 = 'curl -X POST -u ' + username + ':' + password + ' --header "Content-Type: application/json" --header "Accept: audio/wav" --data "{\\\"text\\\":\\\"' + text_to_say + '\\\"}" --output returned_speech.wav "https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize"'
-	#execute command in Bash, requesting a .wav speech file by giving a text file to the text to speech API
-	#process = subprocess.Popen([bash_command3], stdout=subprocess.PIPE)
-	#Wait for the subprocess to finish before executing next line
-	#output = process.communicate()[0]
 
 	part1 = 'curl -X POST -u ' + username + ':' + password + ' '
 	part2 = '--header "Content-Type: application/json" --header "Accept: audio/wav" '
