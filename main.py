@@ -13,6 +13,79 @@ import pyaudio
 import wave
 import subprocess
 
+
+
+
+class Word_manager(object):
+	def __init__(self):
+		self.synonym_groups = []
+		self.keywords = ["cough", "headache"]
+
+	def word_info(self, word):
+		api_key = os.environ.get("WORDS_KEY")
+		command = "curl --get --include 'https://wordsapiv1.p.mashape.com/words/" + word + "' -H 'X-Mashape-Key: " + api_key + "' -H 'Accept: application/json'"
+		process = subprocess.Popen([command], shell = True, stdout=subprocess.PIPE)
+		process_output = process.communicate()[0]
+		
+		returned_json = json.loads("{" + ((process_output.split("\n{"))[1]))
+		print returned_json
+		to_return = {}
+		if 'results' in returned_json:
+			if 'typeOf' in returned_json:
+				to_return['type'] = returned_json['results'][0]["typeOf"]
+			if 'derivation' in returned_json:
+				to_return['derived_from'] = returned_json['results'][0]["derivation"][0]
+			if 'synonyms' in returned_json:
+				to_return['synonyms'] = returned_json['results'][0]["synonyms"]
+		#to_return = {'type' : returned_json['results'][0]["typeOf"], 'derived_from' : returned_json['results'][0]["derivation"][0], 'synonyms' : returned_json['results'][0]["synonyms"]}
+		print to_return
+
+	def process_string(self, original_string):
+		to_return = []
+
+		first_processed = []
+		
+		for word in original_string.split():
+			if len(word) < 3:
+				continue
+			elif word[-1] == "!" or word[-1] == "." or word[-1] == "," or word[-1] == "?":
+				word = word[:-1]
+			elif word[0] == "!" or word[0] == "." or word[0] == "," or word[0] == "?":
+				word = word[1:]
+
+			info = self.word_info(word)
+
+			#all the stuff typeOf of symtoms can evaluate as
+			if word in self.keywords or ( 'type' in info and ("symptom" in info['type'] or "ache" in info['type'] or "injury" in info['type'] or "disease" in info['type'])):
+				first_processed.append(word)
+				for item in info['synonyms']:
+					first_processed.append(item)
+		
+		for word in first_processed:
+			if word not in to_return:
+				to_return.append(word)
+		
+		return to_return
+		#
+		
+		#replace words with their derivatives
+
+
+		#if word's type is 'symptom, add all synonyms to original string'
+
+
+		#check for presence of self.keywords, add to to_return
+		#for word in original_string:
+		#	if word in self.keywords and word not in to_return:
+		#		to_return.append(word)
+
+	#curl --get --include 'https://wordsapiv1.p.mashape.com/words/bump/also' -H 'X-Mashape-Key: WgKtqH033PmshpStvNCFnC7STm0up1g9xv5jsniVszHkDunw1c' -H 'Accept: application/json'
+
+
+
+
+
+
 def record_audio(file_name):
 	#This block records audio into a .wav file
 	recorder = Recorder(str(file_name))
@@ -150,9 +223,21 @@ def main():
 	print ""
 	'''
 
-	get_injury_classification()
+	wm = Word_manager()
+	wm.word_info("coughing")
+	#get_injury_classification()
 
+	print ""
 
+	print wm.process_string(transcript1)
+
+	#text2speech("Welcome to X please tell me about the situation")
+	
+	#record input
+	#analyze input to make sure all key info is given
+	#if not all info given,	ask for missing info
+
+	#merge all the transcripts together, classify
 
 
 
